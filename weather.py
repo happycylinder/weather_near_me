@@ -1,6 +1,14 @@
 import requests
 import json
 
+def checkCoord(lat, lon, desired):
+    url = "http://api.openweathermap.org/data/2.5/weather?lat=" + str(lat) + "&lon=" + str(lon) + "&APPID=385e616862b080819e31595909485307"
+    res = requests.get(url)
+    if res.json()['weather'][0]['main'].find(desired) == 0:
+        print "AHA! It's near these coordinates: " + str(res.json()['coord']['lat']) + "," + str(res.json()['coord']['lon'])
+        return 1
+
+
 def weather(lat, lon, desired):
     url = "http://api.openweathermap.org/data/2.5/weather?lat=" + str(lat) + "&lon=" + str(lon) + "&APPID=385e616862b080819e31595909485307"
     res = requests.get(url)
@@ -15,12 +23,7 @@ def weather(lat, lon, desired):
     found = False
     while found != True:
         lat += size
-        url = "http://api.openweathermap.org/data/2.5/weather?lat=" + str(lat) + "&lon=" + str(lon) + "&APPID=385e616862b080819e31595909485307"
-        res = requests.get(url)
-        if res.json()['weather'][0]['main'].find(desired) == 0:
-            print latlist
-            print lonlist
-            print "AHA! It's near these coordinates: " + str(res.json()['coord']['lat']) + "," + str(res.json()['coord']['lon'])
+        if checkCoord(lat, lon, desired) == 1:
             return
 
         latlist.append(lat)
@@ -28,12 +31,8 @@ def weather(lat, lon, desired):
         print "Checking...: " + str(lat) + "," + str(lon)
 
         lon -= size
-        url = "http://api.openweathermap.org/data/2.5/weather?lat=" + str(lat) + "&lon=" + str(lon) + "&APPID=385e616862b080819e31595909485307"
-        res = requests.get(url)
-        if res.json()['weather'][0]['main'].find(desired) == 0:
-            print latlist
-            print lonlist
-            print "AHA! It's near these coordinates: " + str(res.json()['coord']['lat']) + "," + str(res.json()['coord']['lon'])
+
+        if checkCoord(lat, lon, desired) == 1:
             return
 
         latlist.append(lat)
@@ -43,25 +42,17 @@ def weather(lat, lon, desired):
         size += .5
 
         lat -= size
-        url = "http://api.openweathermap.org/data/2.5/weather?lat=" + str(lat) + "&lon=" + str(lon) + "&APPID=385e616862b080819e31595909485307"
-        res = requests.get(url)
-        if res.json()['weather'][0]['main'].find(desired) == 0:
-            print latlist
-            print lonlist
-            print "AHA! It's near these coordinates: " + str(res.json()['coord']['lat']) + "," + str(res.json()['coord']['lon'])
-            return
+        
+        if checkCoord(lat, lon, desired) == 1:
+            return 
 
         latlist.append(lat)
         lonlist.append(lon)
         print "Checking...: " + str(lat) + "," + str(lon)
 
         lon += size
-        url = "http://api.openweathermap.org/data/2.5/weather?lat=" + str(lat) + "&lon=" + str(lon) + "&APPID=385e616862b080819e31595909485307"
-        res = requests.get(url)
-        if res.json()['weather'][0]['main'].find(desired) == 0:
-            print latlist
-            print lonlist
-            print "AHA! It's near these coordinates: " + str(res.json()['coord']['lat']) + "," + str(res.json()['coord']['lon'])
+
+        if checkCoord(lat, lon, desired) == 1:
             return
 
         latlist.append(lat)
