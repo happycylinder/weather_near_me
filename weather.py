@@ -1,20 +1,35 @@
+from flask import Flask, request, jsonify
 import requests
 import json
+
+app = Flask(__name__)
 
 def checkCoord(lat, lon, desired):
     url = "http://api.openweathermap.org/data/2.5/weather?lat=" + str(lat) + "&lon=" + str(lon) + "&APPID=385e616862b080819e31595909485307"
     res = requests.get(url)
     if res.json()['weather'][0]['main'].find(desired) == 0:
-        print "AHA! It's near these coordinates: " + str(res.json()['coord']['lat']) + "," + str(res.json()['coord']['lon'])
-        return 1
+        resp = jsonify({"Success": "AHA! It's near these coordinates: " + str(res.json()['coord']['lat']) + "," + str(res.json()['coord']['lon'])})
+        return resp
 
+@app.route('/weather', methods=["POST"])
+def weather():
+    req = request.get_json()
 
-def weather(lat, lon, desired):
+    if not req.get('longitude') or not req.get('latitude') or not req.get('weather'):
+        resp = jsonify({"Error": "Missing arguments. 'longitude', 'latitude', and 'weather' are required"})
+        resp.status_code = 400
+        return resp
+
+    lon = req.get('longitude')
+    lat = req.get('latitude')
+    desired = req.get('weather')
+
     url = "http://api.openweathermap.org/data/2.5/weather?lat=" + str(lat) + "&lon=" + str(lon) + "&APPID=385e616862b080819e31595909485307"
     res = requests.get(url)
     if res.json()['weather'][0]['main'].find(desired) == 0:
-        print "you're livin it babyyyyyy"
-        return
+        resp = jsonify({"Success": "AHA! It's near these coordinates: " + str(res.json()['coord']['lat']) + "," + str(res.json()['coord']['lon'])})
+ 
+        return resp
 
     size = .5
     latlist = []
@@ -23,8 +38,9 @@ def weather(lat, lon, desired):
     found = False
     while found != True:
         lat += size
-        if checkCoord(lat, lon, desired) == 1:
-            return
+        resp = checkCoord(lat, lon, desired)
+        if resp:
+            return resp
 
         latlist.append(lat)
         lonlist.append(lon)
@@ -32,8 +48,9 @@ def weather(lat, lon, desired):
 
         lon -= size
 
-        if checkCoord(lat, lon, desired) == 1:
-            return
+        resp = checkCoord(lat, lon, desired)
+        if resp:
+            return resp        
 
         latlist.append(lat)
         lonlist.append(lon)
@@ -43,17 +60,19 @@ def weather(lat, lon, desired):
 
         lat -= size
         
-        if checkCoord(lat, lon, desired) == 1:
-            return 
+        resp = checkCoord(lat, lon, desired)
+        if resp:
+            return resp
 
         latlist.append(lat)
         lonlist.append(lon)
         print "Checking...: " + str(lat) + "," + str(lon)
 
         lon += size
-
-        if checkCoord(lat, lon, desired) == 1:
-            return
+        
+        resp = checkCoord(lat, lon, desired)
+        if resp:
+            return resp
 
         latlist.append(lat)
         lonlist.append(lon)
@@ -66,7 +85,4 @@ def weather(lat, lon, desired):
 
 
 if __name__ == "__main__":
-    lat = input("What is your latitude?  ")
-    lon = input("what is your longitude?  ")
-    desired = input("desired weather keyword  ")
-    weather(lat, lon, desired)
+    app.run(port=8000)
